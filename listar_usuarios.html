@@ -78,6 +78,20 @@
         #downloadCSV:hover {
             background-color: #45a049;
         }
+        #importCSV {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #importCSV:hover {
+            background-color: #0056b3;
+        }
         /* Estilo para o link de editar */
         .edit-link {
             display: inline-block;
@@ -131,6 +145,8 @@
     </table>
 
     <button id="downloadCSV">Baixar CSV</button>
+    <input type="file" id="csvFileInput" style="display:none" accept=".csv" />
+    <button id="importCSV" style="display: none;">Importar CSV</button>
 
     <script>
         window.onload = function() {
@@ -155,6 +171,11 @@
                 `;
                 tableBody.appendChild(row);
             });
+
+            // Exibe o botão "Importar CSV" apenas na página listar_usuarios.html
+            if (window.location.pathname.includes('listar_usuarios.html')) {
+                document.getElementById('importCSV').style.display = 'block';
+            }
 
             // Função para gerar e baixar o CSV
             document.getElementById('downloadCSV').addEventListener('click', function() {
@@ -183,6 +204,44 @@
                 link.href = URL.createObjectURL(blob);
                 link.download = 'usuarios.csv';
                 link.click();
+            });
+
+            // Importação de CSV
+            document.getElementById('importCSV').addEventListener('click', function() {
+                document.getElementById('csvFileInput').click();
+            });
+
+            document.getElementById('csvFileInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file && file.type === 'text/csv') {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const csvData = event.target.result;
+                        const rows = csvData.split('\n').map(row => row.split(','));
+
+                        // Processa o CSV
+                        const pessoas = rows.slice(1).map(row => ({
+                            id: row[0],
+                            nome: row[1],
+                            id_discord: row[2],
+                            divisao: row[3],
+                            cargo: row[4],
+                            data_admissao: row[5],
+                            cadastrado_por: row[6],
+                            vida_secundaria: row[7]
+                        }));
+
+                        // Adiciona ao localStorage
+                        const existingPessoas = JSON.parse(localStorage.getItem('pessoas')) || [];
+                        localStorage.setItem('pessoas', JSON.stringify(existingPessoas.concat(pessoas)));
+
+                        alert('Dados importados com sucesso!');
+                        window.location.reload();  // Recarrega a página para mostrar os dados atualizados
+                    };
+                    reader.readAsText(file);
+                } else {
+                    alert('Por favor, selecione um arquivo CSV válido.');
+                }
             });
         };
     </script>
