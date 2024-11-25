@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listar Usuários</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #292929;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+        }
+        header img {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
+        header a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        header a:hover {
+            text-decoration: underline;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .button {
+            display: block;
+            width: 150px;
+            padding: 10px;
+            background-color: #5bc0de;
+            color: white;
+            text-align: center;
+            margin: 20px auto;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .button:hover {
+            background-color: #31b0d5;
+        }
+        #downloadCSV {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #downloadCSV:hover {
+            background-color: #45a049;
+        }
+        /* Estilo para o link de editar */
+        .edit-link {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #f0ad4e;
+            color: white;
+            border-radius: 3px;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .edit-link:hover {
+            background-color: #ec971f;
+            transform: scale(1.1);
+        }
+
+        .edit-link:active {
+            background-color: #d58512;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="imagens/ddj_logo.png" alt="Logo">
+        <a href="index.html">Cadastrar</a>
+        <a href="listar_usuarios.html">Consultar</a>
+    </header>
+
+    <h2 style="text-align: center;">Lista de Usuários</h2>
+
+    <table id="usuariosTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>ID Discord</th>
+                <th>Divisão</th>
+                <th>Cargo</th>
+                <th>Data de Admissão</th>
+                <th>Vida Secundária</th>
+                <th>Desligado Por</th>
+                <th>Data de Desligamento</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- As linhas de usuários serão adicionadas dinamicamente aqui -->
+        </tbody>
+    </table>
+
+    <button id="downloadCSV">Baixar CSV</button>
+
+    <script>
+        window.onload = function() {
+            const usuarios = JSON.parse(localStorage.getItem('pessoas')) || [];
+            const tableBody = document.querySelector('#usuariosTable tbody');
+
+            usuarios.forEach((usuario, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${usuario.id}</td>
+                    <td>${usuario.nome}</td>
+                    <td>${usuario.id_discord}</td>
+                    <td>${usuario.divisao}</td>
+                    <td>${usuario.cargo}</td>
+                    <td>${usuario.data_admissao}</td>
+                    <td>${usuario.vida_secundaria}</td>
+                    <td>${usuario.desligado_por || ''}</td>
+                    <td>${usuario.data_desligamento || ''}</td>
+                    <td>
+                        <a href="editar_usuario.html?index=${index}" class="edit-link">Editar</a>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Função para gerar e baixar o CSV
+            document.getElementById('downloadCSV').addEventListener('click', function() {
+                const csvData = [];
+                const headers = ['ID', 'Nome', 'ID Discord', 'Divisão', 'Cargo', 'Data de Admissão', 'Vida Secundária', 'Desligado Por', 'Data de Desligamento'];
+                csvData.push(headers.join(','));
+
+                usuarios.forEach(usuario => {
+                    const row = [
+                        usuario.id,
+                        usuario.nome,
+                        usuario.id_discord,
+                        usuario.divisao,
+                        usuario.cargo,
+                        usuario.data_admissao,
+                        usuario.vida_secundaria,
+                        usuario.desligado_por || '',
+                        usuario.data_desligamento || ''
+                    ];
+                    csvData.push(row.join(','));
+                });
+
+                const csvString = csvData.join('\n');
+                const blob = new Blob([csvString], { type: 'text/csv' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'usuarios.csv';
+                link.click();
+            });
+        };
+    </script>
+</body>
+</html>
